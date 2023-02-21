@@ -5,3 +5,7 @@ cterdam's personal website hosted with [GitHub Pages][GHP] and Jekyll theme
 
 [GHP]: https://docs.github.com/en/pages/setting-up-a-github-pages-site-with-jekyll/testing-your-github-pages-site-locally-with-jekyll
 [MMISTAKE]: https://github.com/mmistakes/minimal-mistakes
+
+To install plugins: `bundle`
+
+To locally test the website: `bundle exec jekyll serve`
