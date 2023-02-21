@@ -4,16 +4,29 @@
 # You can create any custom variable you would like, and they will be accessible
 # in the templates via {{ site.myvariable }}.
 
-title: 李良澤 Josh Lee
-email: me@llz.info
-# This description will appear in doc head meta (for Google Search) and in
-# feed.xml site desc.
-description: >- # this means to ignore newlines until "baseurl:"
-  Personal page for Josh Lee.
-baseurl: "" # the subpath of your site, e.g. /blog
-url: "" # the base hostname & protocol for your site, e.g. http://example.com
-twitter_username: jekyllrb
-github_username:  jekyll
+title: &llzname "李良澤 Josh Lee"
+email: "me@llz.info"
+
+# This will produce page titles like Sample Page | My Awesome Site.
+title_separator: "|"
+
+# the subpath of site, e.g. /blog
+baseurl: ""
+
+# the base hostname & protocol for site, e.g. http://example.com
+url: "http://llz.info"
+
+# A short tagline that appears below the title in site masthead.
+subtitle: ""
+
+# Site author name which can be overriden on specific pages.
+name: *llzname
+
+# description for doc head meta (for Google Search) and in feed.xml site desc.
+description: "Personal page for 李良澤 Josh Lee."
+
+# twitter_username: jekyllrb
+github_username:  "cterdam"
 
 # Build settings
 # theme: minima
