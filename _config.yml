@@ -4,29 +4,33 @@
 # You can create any custom variable you would like, and they will be accessible
 # in the templates via {{ site.myvariable }}.
 
-title: &llzname "李良澤 Josh Lee"
-email: "me@llz.info"
+# Name in Chinese and English
+cnname: &cnname "李良澤"
+enname: &enname "Josh Lee"
+
+# Title on browser tab
+title: "李良澤 Josh Lee"
+# Title on top of page
+masthead_title: *cnname
+# Subtitle just below title
+subtitle: *enname
+# On bottom of page
+name: *enname
 
 # This will produce page titles like Sample Page | My Awesome Site.
 title_separator: "|"
 
-# the subpath of site, e.g. /blog
-baseurl: ""
-
-# the base hostname & protocol for site, e.g. http://example.com
-url: "http://llz.info"
-
-# A short tagline that appears below the title in site masthead.
-subtitle: ""
-
-# Site author name which can be overriden on specific pages.
-name: *llzname
-
 # description for doc head meta (for Google Search) and in feed.xml site desc.
 description: "Personal page for 李良澤 Josh Lee."
 
-# twitter_username: jekyllrb
-github_username:  "cterdam"
+# Hide feed button
+atom_feed:
+  hide: true
+
+# Enable Lunr search
+search: true
+lunr:
+  search_within_pages: true
 
 # Build settings
 # theme: minima
