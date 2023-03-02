@@ -23,6 +23,14 @@ title_separator: "|"
 # description for doc head meta (for Google Search) and in feed.xml site desc.
 description: "Personal page for 李良澤 Josh Lee."
 
+author:
+  name: "Josh Lee"
+  avatar: "/assets/images/medellin.jpg"
+  bio: "The fundamental cause of the trouble is that in the modern world the stupid are cocksure while the intelligent are full of doubt. \n - Bertrand Russell"
+  location: "Pittsburgh, PA, USA"
+
+author_profile: true
+
 # Hide feed button
 atom_feed:
   hide: true
