@@ -8,4 +8,4 @@ cterdam's personal website hosted with [GitHub Pages][GHP] and Jekyll theme
 
 To install plugins: `bundle`
 
-To locally test the website: `bundle exec jekyll serve`
+To locally test the website: `make test`
