@@ -4,7 +4,49 @@
 # You can create any custom variable you would like, and they will be accessible
 # in the templates via {{ site.myvariable }}.
 
-# Name in Chinese and English
+# Front matter defaults for posts
+defaults:
+  # _posts
+  - scope:
+      path: ""
+      type: posts
+    values:
+      layout: single
+      show_date: true
+      date_format: "%Y%m%d"
+      read_time: true
+      enable_copy_code_button: true
+      comments: true
+      share: true
+      related: true
+
+# Build settings
+# theme: minima
+remote_theme: "mmistakes/minimal-mistakes"
+minimal_mistakes_skin: "contrast"
+plugins:
+  - jekyll-feed
+  - jekyll-include-cache
+
+# Enable Lunr search
+search: true
+lunr:
+  search_within_pages: true
+
+# Site navigation
+nav:
+  - title: "Home"
+    url: /
+  - title: "About"
+    url: /about/
+
+# This will produce page titles like Sample Page | My Awesome Site.
+title_separator: "|"
+
+# description for doc head meta (for Google Search) and in feed.xml site desc.
+description: "Personal page for 李良澤 Josh Lee."
+
+# Author settings
 cnname: &cnname "李良澤"
 enname: &enname "Josh Lee"
 
@@ -17,38 +59,17 @@ subtitle: *enname
 # On bottom of page
 name: *enname
 
-# This will produce page titles like Sample Page | My Awesome Site.
-title_separator: "|"
-
-# description for doc head meta (for Google Search) and in feed.xml site desc.
-description: "Personal page for 李良澤 Josh Lee."
-
 author:
   name: "Josh Lee"
-  avatar: "/assets/images/medellin.jpg"
-  bio: "The fundamental cause of the trouble is that in the modern world the stupid are cocksure while the intelligent are full of doubt. \n - Bertrand Russell"
-  location: "Pittsburgh, PA, USA"
+  avatar: "/assets/images/headshot_cornell.jpg"
+  bio: "Applied Research at Google DeepMind.\nOpinions my own."
+  location: "San Francisco Bay Area"
 
 author_profile: true
 
 # Hide feed button
 atom_feed:
   hide: true
-
-# Enable Lunr search
-search: true
-lunr:
-  search_within_pages: true
-
-# Build settings
-# theme: minima
-remote_theme: "mmistakes/minimal-mistakes@4.24.0"
-# theme: minimal-mistakes-jekyll
-plugins:
-  - jekyll-feed
-  - jekyll-include-cache
-
-minimal_mistakes_skin: "contrast"
 
 # Exclude from processing.
 # The following items will not be processed, by default.
