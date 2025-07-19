@@ -3,16 +3,27 @@ layout: single
 title: "About"
 permalink: /about/
 author_profile: true
+toc: true
+toc_label: "About"
+toc_icon: "user"
+toc_sticky: true
 ---
 
-I am a Research Engineer at Google DeepMind.
+I work on AI research and startup projects.
+
+Currently, I am a Research Engineer at [Google
+DeepMind](https://deepmind.google).
+
+I graduated from the [Language Technologies Institute](https://lti.cs.cmu.edu/)
+at [Carnegie Mellon University](https://cmu.edu).
 
 ## FAQ
 
-## [Q1] So what name(s) do you go by?
+### So what name(s) do you go by?
 
-An unfortunate byproduct of growing up in the globalization era is that I've
-ended up with more names than one person really needs. Here's my experience:
+An unfortunate byproduct of growing up in the globalization era is that
+sometimes one ends up with more names than one person really needs. Here's my
+experience:
 
 - **李良澤**
   - The name in Chinese which I was born with.
