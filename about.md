@@ -1,6 +1,12 @@
 ---
 layout: single
-title: "About Me"
+title: "About"
 permalink: /about/
 author_profile: true
 ---
+
+Hi!
+
+## Contact
+
+- Contact me at this domain.

@@ -1,0 +1,19 @@
+---
+---
+
+@import "minimal-mistakes/skins/{{ site.minimal_mistakes_skin | default: 'default' }}";
+@import "minimal-mistakes";
+
+/* Override: make avatar square */
+.author__avatar > img,
+.page__author .author__avatar > img,
+img.u-photo {
+  border-radius: 0;   /* remove the 50% circle */
+  width: auto;
+  height: auto;
+}
+
+/* ── hide “© … Powered by …” line ─────────── */
+.page__footer .page__footer-copyright {
+  display: none;
+}

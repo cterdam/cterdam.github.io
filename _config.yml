@@ -1,10 +1,53 @@
+# vim:foldmethod=marker
+
+# Instructions {{{
+
 # Site settings
 # These are used to personalize your new site. If you look in the HTML files,
 # you will see them accessed via {{ site.title }}, {{ site.email }}, and so on.
 # You can create any custom variable you would like, and they will be accessible
 # in the templates via {{ site.myvariable }}.
 
-# Front matter defaults for posts
+# }}}
+# Author settings {{{
+
+cnname: &cnname "李良澤"
+enname: &enname "Liangze Li"
+
+use_academicons: true
+author_profile: true
+
+author:
+  name: |
+    李良澤
+  avatar: "/assets/images/headshot_cornell.jpg"
+  bio: |
+    **Liangze Li**<br>
+    **Джош Лии**<br>
+    <br>
+    AI Research @ Google DeepMind.<br>
+    Opinions my own.
+  location: "San Francisco Bay Area"
+  links:
+    - label: "I still prefer to call it Twitter"
+      icon: "fab fa-twitter"
+      url: "https://twitter.com/cterdam"
+    - label: "LinkedIn"
+      icon: "fab fa-linkedin"
+      url: "https://linkedin.com/in/cterdam"
+    - label: "GitHub"
+      icon: "fab fa-github"
+      url: "https://github.com/cterdam"
+    - label: "Google Scholar"
+      icon: "fas fa-graduation-cap"
+      url: "https://scholar.google.com/citations?user=Vt1yhosAAAAJ&hl=en&oi=ao"
+    - label: "Instagram"
+      icon: "fab fa-instagram"
+      url:  "https://instagram.com/cterdam"
+
+# }}}
+# Front matter defaults {{{
+
 defaults:
   # _posts
   - scope:
@@ -20,7 +63,9 @@ defaults:
       share: true
       related: true
 
-# Build settings
+# }}}
+# Build settings {{{
+
 # theme: minima
 remote_theme: "mmistakes/minimal-mistakes"
 minimal_mistakes_skin: "contrast"
@@ -33,25 +78,14 @@ search: true
 lunr:
   search_within_pages: true
 
-# Site navigation
-nav:
-  - title: "Home"
-    url: /
-  - title: "About"
-    url: /about/
-
 # This will produce page titles like Sample Page | My Awesome Site.
 title_separator: "|"
 
 # description for doc head meta (for Google Search) and in feed.xml site desc.
-description: "Personal page for 李良澤 Josh Lee."
-
-# Author settings
-cnname: &cnname "李良澤"
-enname: &enname "Josh Lee"
+description: "Personal page for 李良澤 Liangze Li."
 
 # Title on browser tab
-title: "李良澤 Josh Lee"
+title: "李良澤 Liangze Li"
 # Title on top of page
 masthead_title: *cnname
 # Subtitle just below title
@@ -59,17 +93,12 @@ subtitle: *enname
 # On bottom of page
 name: *enname
 
-author:
-  name: "Josh Lee"
-  avatar: "/assets/images/headshot_cornell.jpg"
-  bio: "Applied Research at Google DeepMind.\nOpinions my own."
-  location: "San Francisco Bay Area"
-
-author_profile: true
-
 # Hide feed button
 atom_feed:
   hide: true
+
+# }}}
+# Exclude {{{
 
 # Exclude from processing.
 # The following items will not be processed, by default.
@@ -90,3 +119,5 @@ atom_feed:
 #   - vendor/cache/
 #   - vendor/gems/
 #   - vendor/ruby/
+
+# }}}
