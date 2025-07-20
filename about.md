@@ -9,7 +9,7 @@ toc_icon: "user"
 toc_sticky: true
 ---
 
-I work on AI research and startup projects.
+I am involved in AI research and startup projects.
 
 Currently, I am a Research Engineer at [Google
 DeepMind](https://deepmind.google).
@@ -38,7 +38,7 @@ experience:
     I know have eventually graduated from their English names once they became
     adults and have just used the Pinyin transliteration of their Chinese names,
     largely because that's what goes on their official documents. When I had the
-    chance, I was unwilling to move out of my English name because too many
+    chance, I was reluctant to move out of my English name because too many
     people had already known me by this name and I also got used to it. Perhaps
     this has been a mistake.
 - **Джош Лии**
