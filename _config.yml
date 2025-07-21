@@ -97,6 +97,14 @@ atom_feed:
   hide: true
 
 # }}}
+# Analytics {{{
+
+analytics:
+  provider: "google-gtag"
+  google:
+    tracking_id: "G-6XXBFNV02T"
+
+# }}}
 # Exclude {{{
 
 # Exclude from processing.
