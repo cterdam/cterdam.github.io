@@ -15,7 +15,6 @@ cnname: &cnname "李良澤"
 enname: &enname "Liangze Li"
 
 use_academicons: true
-author_profile: true
 
 author:
   name: |
@@ -57,7 +56,7 @@ defaults:
       layout: single
       show_date: true
       date_format: "%Y%m%d"
-      read_time: true
+      read_time: false
       enable_copy_code_button: true
       comments: true
       share: true

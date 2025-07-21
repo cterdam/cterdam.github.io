@@ -3,3 +3,5 @@ main:
     url: /
   - title: "About"
     url: /about/
+  - title: "Weekly"
+    url: /weekly/
