@@ -23,13 +23,14 @@ author:
   bio: |
     **Liangze Li**<br>
     **Джош Лии**<br>
+    **"Josh Lee"**<br>
     <br>
     AI Research @ Google DeepMind.<br>
     Opinions my own.
   location: "San Francisco Bay Area"
   links:
     - label: "Still preferring to call it Twitter"
-      icon: "fab fa-twitter"
+      icon: "fab fa-x-twitter"
       url: "https://twitter.com/cterdam"
     - label: "LinkedIn"
       icon: "fab fa-linkedin"
@@ -81,7 +82,7 @@ lunr:
 title_separator: "|"
 
 # description for doc head meta (for Google Search) and in feed.xml site desc.
-description: "Personal page for 李良澤 Liangze Li."
+description: "Readings and Writings from 李良澤 Liangze Li."
 
 # Title on browser tab
 title: "李良澤 Liangze Li"
