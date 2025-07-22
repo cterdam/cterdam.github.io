@@ -44,6 +44,22 @@ experience:
 - **Джош Лии**
   - Cyrillic transliteration of "Josh Lee".
 
+### Can you advise our startup?
+
+I'd love to touch base and hear more about your startup.
+
+Alphabet's Conflict of Interest review process is rather strict on formal
+advisorships, so I usually cannot promise any long-term outcome until we find
+out.
+
+As of 2025, I am also serving as an advisor in the [Google for
+Startups](https://startup.google.com/) program; so we might also find venues to
+engage there.
+
+### Can you collaborate with us on a research project?
+
+I’m open to exploring opportunities for collaboration. Please share details.
+
 ### Can you refer me for a job at $COMPANY?
 
 I can refer you if I have a reason to believe you are suitable for the job.
