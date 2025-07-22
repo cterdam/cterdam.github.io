@@ -8,8 +8,7 @@ something, you probably haven't thought it through.
 
 I write for two purposes:
 
-- To reflect on what I am reading and learning;
-- To make useful information more accessible to people who need it.
+- to reflect on what I read and learn;
+- to make useful information accessible to people who need it.
 
-My goal in writing is to be as concise as possible. Every unnecessary word is a
-burden on the reader’s mind.
+In writing, I aim for conciseness - every unnecessary word is wasted energy.
