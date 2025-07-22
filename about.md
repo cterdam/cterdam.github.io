@@ -44,6 +44,12 @@ experience:
 - **Джош Лии**
   - Cyrillic transliteration of "Josh Lee".
 
+### Can you refer me for a job at $COMPANY?
+
+I can refer you if I have a reason to believe you are suitable for the job.
+Please confirm with me and use this [form](https://forms.gle/31WYqGZdKrigTmtt9)
+to share the materials.
+
 ## Contact
 
 - Email me at this domain.
