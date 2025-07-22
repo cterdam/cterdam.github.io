@@ -3,6 +3,7 @@ title: "Weekly"
 layout: category
 taxonomy: weekly
 permalink: /weekly/
+comments: true
 ---
 
 Each Monday I publish a concise Weekly note that captures my top of mind. These
