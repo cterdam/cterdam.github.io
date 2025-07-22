@@ -9,3 +9,7 @@ cterdam's personal website hosted with [GitHub Pages][GHP] and Jekyll theme
 To install plugins: `bundle`
 
 To locally test the website: `make test`
+
+Analytics is supported with [Google Analytic](analytics.google.com).
+
+Commenting is supported with [giscus](giscus.app).
