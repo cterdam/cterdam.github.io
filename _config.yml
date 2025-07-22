@@ -108,18 +108,20 @@ analytics:
 # }}}
 # Comments {{{
 
+repository: "cterdam/cterdam.github.io"
+
 comments:
   provider: "giscus"
   giscus:
-    repo: "cterdam/cterdam.github.io"
+    # repo: "cterdam/cterdam.github.io"
     repo_id: "R_kgDOJAVr2A"
     category_name: "Pages"
     category_id: "DIC_kwDOJAVr2M4CtQZ0"
-    mapping: "pathname"
+    discussion_term: "pathname"
     reactions_enabled: "1"
+    theme: "preferred_color_scheme"
     emit_metadata: "0"
     input_position: "bottom"
-    theme: "preferred_color_scheme"
     lang: "en"
 
 # }}}
