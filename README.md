@@ -10,6 +10,6 @@ To install plugins: `bundle`
 
 To locally test the website: `make test`
 
-Analytics is supported with [Google Analytic](analytics.google.com).
+Analytics is supported with [Google Analytics](https://analytics.google.com).
 
-Commenting is supported with [giscus](giscus.app).
+Commenting is supported with [giscus](https://giscus.app).
