@@ -108,12 +108,11 @@ analytics:
 # }}}
 # Comments {{{
 
-# repository: "cterdam/cterdam.github.io"
+repository: "cterdam/cterdam.github.io"
 
 comments:
   provider: "giscus"
   giscus:
-    repo: "cterdam/cterdam.github.io"
     repo_id: "R_kgDOJAVr2A"
     category_name: "Pages"
     category_id: "DIC_kwDOJAVr2M4CtQZ0"
