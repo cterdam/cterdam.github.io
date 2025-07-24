@@ -60,9 +60,9 @@ engage there.
 
 I’m open to exploring opportunities for collaboration. Please share details.
 
-### Can you refer me for a job at $COMPANY?
+### Can you refer me for a role at $COMPANY?
 
-I can refer you if I have a reason to believe you are suitable for the job.
+I can refer you if I have a reason to believe you are suitable for the role.
 Please confirm with me and use this [form](https://forms.gle/31WYqGZdKrigTmtt9)
 to share the materials.
 
