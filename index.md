@@ -11,4 +11,4 @@ I write for two purposes:
 - to reflect on what I read and learn;
 - to make useful information accessible to people who need it.
 
-I consider conciseness a writer's highest virtue.
+I consider brevity a writer's highest virtue.
