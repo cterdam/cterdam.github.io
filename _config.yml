@@ -99,6 +99,9 @@ name: *enname
 atom_feed:
   hide: true
 
+include:
+  - _pages
+
 # }}}
 # Analytics {{{
 
@@ -124,6 +127,15 @@ comments:
     emit_metadata: "0"
     input_position: "bottom"
     lang: "en"
+
+# }}}
+# Footer {{{
+
+footer:
+  links:
+    - label: "Subscribe"
+      icon: "fas fa-fw fa-envelope"
+      url:  "/subscribe/"
 
 # }}}
 # Exclude {{{

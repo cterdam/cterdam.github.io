@@ -4,16 +4,44 @@
 @import "minimal-mistakes/skins/{{ site.minimal_mistakes_skin | default: 'default' }}";
 @import "minimal-mistakes";
 
-/* Override: make avatar square */
+/* Make avatar square */
 .author__avatar > img,
 .page__author .author__avatar > img,
 img.u-photo {
-  border-radius: 15%;   /* remove the 50% circle */
+  border-radius: 15%;
   width: auto;
   height: auto;
 }
 
-/* ── hide “© … Powered by …” line ─────────── */
+/* hide the "Powered by ..." line */
 .page__footer .page__footer-copyright {
   display: none;
+}
+
+/* Make footer icons align right-to-left */
+.page__footer-follow,
+.page__footer-follow .social-icons {
+  display:flex;
+  justify-content:flex-end;
+}
+
+/* Subscribe form */
+.subscribe-form{
+  display:flex;
+  gap:.5rem;
+  border-radius:4px;
+}
+.subscribe-form .textfield,
+.subscribe-form .btn{
+  box-sizing:border-box;
+  padding:0.6rem 1rem;
+  font-size:0.75rem;
+  line-height:1.15;
+  border:1px solid #dfe1e5;
+  border-radius:4px;
+}
+.subscribe-form .btn{
+  border-color:transparent;
+  padding:0.6rem 1rem;          /* a bit wider horizontally if you like */
+  flex:0 0 auto;
 }
