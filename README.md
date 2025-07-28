@@ -13,3 +13,5 @@ To locally test the website: `make test`
 Analytics is supported with [Google Analytics](https://analytics.google.com).
 
 Commenting is supported with [giscus](https://giscus.app).
+
+The email newsletter is supported with [buttondown](https://buttondown.com).
