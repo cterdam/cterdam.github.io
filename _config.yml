@@ -62,6 +62,7 @@ defaults:
       comments: true
       share: true
       related: true
+      last_modified_at: null
 
 # }}}
 # Build settings {{{
