@@ -5,7 +5,7 @@ permalink: /subscribe/
 author_profile: true
 ---
 
-Receive my latest insights by email.
+Receive my latest writings by email.
 
 {% include subscribe.html %}
 
