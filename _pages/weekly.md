@@ -1,12 +1,12 @@
 ---
-title: "Weekly"
+title: "The week ahead"
 layout: category
 taxonomy: weekly
 permalink: /weekly/
 ---
 
-Every Monday I publish a brief Weekly note that captures my top of mind. These
-could include:
+Every Monday, I publish a brief note that captures my top of mind. These could
+include:
 
 - **Highlights** - wins and milestones worth celebrating.
 - **Sigals** - trends or data points that might matter later.
