@@ -58,13 +58,21 @@ engage there.
 
 ### Can you collaborate with us on a research project?
 
-I’m open to exploring opportunities for collaboration. Please share details.
+The field of AI has become much more empirical than it used to be, making it (in
+my opinion) easier to get started. I am open to hearing about your project and
+exploring opportunities for collaboration. Please share details.
 
 ### Can you refer me for a role at $COMPANY?
 
 I can refer you if I have a reason to believe you are suitable for the role.
 Please confirm with me and use this [form](https://forms.gle/31WYqGZdKrigTmtt9)
 to share the materials.
+
+### Can we schedule a meeting?
+
+If you'd like to meet, please confirm with me before booking office hours
+[here](https://calendar.app.google/6hmxxL3hVZ4gi7eJ7). Meetings can be either in
+person or online.
 
 ## Contact
 
