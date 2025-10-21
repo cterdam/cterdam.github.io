@@ -3,7 +3,7 @@ main:
     url: /
   - title: "Weekly"
     url: /weekly/
-  - title: "Monthly"
-    url: /monthly/
+  # - title: "Monthly"
+  #   url: /monthly/
   - title: "About"
     url: /about/
