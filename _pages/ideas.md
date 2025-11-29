@@ -15,7 +15,7 @@ time to do them.
 
 Since I haven't yet found a way to build everything myself (still trying to),
 I'm open-sourcing my backlog. This is a list of project concepts I’d love to see
-brought to life. If you see something you like, feel free to steal it.
+brought to life. Feel free to steal anything.
 
 ## Example
 
