@@ -167,6 +167,16 @@ Feel free to steal anything.
 - Want to measure output of an engineer but how? Use a model to make the
   value of a code segment more measurable.
 
+### Agentic coding softwares
+
+- Agentic coding UI first incorporated AI chats as a side bar on the right, then
+  some tools like Cursor moved it to the left. This represents a paradigm change
+  where the user cares less about the code and more about the flow that they and
+  the AI collaborate on.
+- Now these softwares still show code by default. Maybe the user won't care so
+  much about the exact code itself but would rather just see the AI chat on one
+  side and a flowchart representation of the code on the other side?
+
 ## Languages
 
 ### Kid's bilingual toy
