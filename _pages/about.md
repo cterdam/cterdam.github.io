@@ -53,15 +53,14 @@ out.
 
 ### Can you collaborate with us on a research project?
 
-It's getting easier every day to get started on AI. I am open to hearing about
-your project and exploring opportunities for collaboration. Please share
-details.
+I am open to hearing about your project and exploring opportunities for
+collaboration.
 
-### Can you refer me for a role at $COMPANY?
+### Can you refer me for a role?
 
 I can refer you if I have a reason to believe you are suitable for the role.
 Please confirm with me and use this [form](https://forms.gle/31WYqGZdKrigTmtt9)
-to share the materials.
+to share details.
 
 ### Can we schedule a meeting?
 
