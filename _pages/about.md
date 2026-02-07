@@ -64,7 +64,7 @@ to share details.
 
 ### Can we schedule a meeting?
 
-If you'd like to meet, please confirm with me before booking office hours
+Please confirm with me before booking office hours
 [here](https://calendar.app.google/6hmxxL3hVZ4gi7eJ7). Meetings can be either in
 person or online.
 
