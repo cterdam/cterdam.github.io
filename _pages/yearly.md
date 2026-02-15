@@ -4,5 +4,3 @@ layout: category
 taxonomy: yearly
 permalink: /yearly/
 ---
-
-Yearly intro
