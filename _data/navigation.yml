@@ -3,6 +3,8 @@ main:
     url: /
   - title: "Weekly"
     url: /weekly/
+  - title: "Yearly"
+    url: /yearly/
   - title: "Ideas"
     url: /ideas/
   - title: "About"
