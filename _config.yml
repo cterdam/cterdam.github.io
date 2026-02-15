@@ -75,6 +75,9 @@ plugins:
   - jekyll-include-cache
   - jekyll-redirect-from
 
+# Enable building future posts
+future: true
+
 # Enable Lunr search
 search: true
 lunr:
