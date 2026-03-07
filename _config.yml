@@ -49,7 +49,7 @@ author:
 # Front matter defaults {{{
 
 defaults:
-  # _posts
+  # _posts (shared)
   - scope:
       path: ""
       type: posts
@@ -63,6 +63,24 @@ defaults:
       share: true
       related: true
       last_modified_at: null
+  # _posts/weekly
+  - scope:
+      path: "_posts/weekly"
+      type: posts
+    values:
+      permalink: /weekly/:year:month:day/
+  # _posts/yearly
+  - scope:
+      path: "_posts/yearly"
+      type: posts
+    values:
+      permalink: /:year/
+  # _docs
+  - scope:
+      path: ""
+      type: docs
+    values:
+      layout: single
 
 # }}}
 # Build settings {{{
@@ -101,6 +119,11 @@ name: *enname
 # Hide feed button
 atom_feed:
   hide: true
+
+collections:
+  docs:
+    output: true
+    permalink: /:title/
 
 include:
   - _pages

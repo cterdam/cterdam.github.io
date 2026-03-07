@@ -1,12 +1,9 @@
 ---
-layout: single
 title: "Ideas"
-permalink: /ideas/
 toc: true
 toc_label: "Ideas"
 toc_icon: "lightbulb"
 toc_sticky: true
-comments: true
 ---
 
 In an interview, Sam Altman said if he were 22, he would feel like the luckiest

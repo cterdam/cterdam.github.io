@@ -5,7 +5,5 @@ main:
     url: /weekly/
   - title: "Yearly"
     url: /yearly/
-  - title: "Ideas"
-    url: /ideas/
   - title: "About"
     url: /about/
