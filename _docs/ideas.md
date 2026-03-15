@@ -74,6 +74,14 @@ Feel free to steal anything.
   of text. The same can be said about conditional sentences, processes,
   conversations, and most topics.
 
+### Visualization front-end for markdown
+
+- It used to be better to keep information in Notion, but now with agents,
+  Markdown files seem actually more functional. The only problem is they can't
+  be very well visualized.
+- Invent visualization on the fly since code is cheap. The underlying data is
+  only staying in text form.
+
 ## Modeling
 
 ### Distillation
@@ -295,3 +303,8 @@ Feel free to steal anything.
   how to program.
 - For people who don’t know how to take good photos but have the need (think
   husband & wife), do we have vibe photography?
+
+### LLM Inference cache
+
+- LLM output caching. Share a giant cache so lookup before actual inference.
+Can be cheaper than actual LLM inference.
