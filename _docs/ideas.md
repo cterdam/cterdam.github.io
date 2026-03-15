@@ -134,6 +134,10 @@ Feel free to steal anything.
   question is just how we will perform inference on them.
   - For example, we can't just ask such a model a question directly.
 
+### Creative writing
+
+- Will typos make LLM more creative?
+
 ## Programming
 
 ### Balance between code and no-code
@@ -182,6 +186,13 @@ Feel free to steal anything.
 - Now these softwares still show code by default. Maybe the user won't care so
   much about the exact code itself but would rather just see the AI chat on one
   side and a flowchart representation of the code on the other side?
+
+### Agentic harness
+
+- Harness development work seems like solidifying human-specific knowledge,
+  precisely what the Bitter Lessons warned us against.
+- Is there a way to use the model intelligence as a general harness, without
+  requiring too much rigid structures?
 
 ## Languages
 
