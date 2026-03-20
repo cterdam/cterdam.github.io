@@ -418,6 +418,177 @@ export DOCKER_HOST=unix://$XDG_RUNTIME_DIR/docker.sock
   sudo -u alice podman exec -it myworkspace bash
   ```
 
+### Approach 3 - Per-user virtual machines
+
+Each user runs their own virtual machine (VM) on the host, providing full OS
+isolation. Unlike containers, VMs run a separate kernel, so a host sudoer cannot
+simply inspect another user's filesystem without extra steps.
+
+#### Setup
+
+Install QEMU/KVM and libvirt:
+
+```sh
+sudo apt install qemu-kvm libvirt-daemon-system virtinst virt-manager
+```
+
+Enable and start libvirt:
+
+```sh
+sudo systemctl enable --now libvirtd
+```
+
+Add each user to the `libvirt` group so they can manage their own VMs without
+sudo:
+
+```sh
+sudo usermod -aG libvirt alice
+sudo usermod -aG libvirt bob
+```
+
+#### Creating a VM
+
+Each user creates their own VM from a base image. For example, using an Ubuntu
+cloud image:
+
+```sh
+# Download a cloud image
+wget https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img
+
+# Create a user-specific disk by copying the base image
+cp jammy-server-cloudimg-amd64.img alice-vm.qcow2
+qemu-img resize alice-vm.qcow2 100G
+```
+
+Create a cloud-init config for the user at `alice-cloud-init.yaml`:
+
+```yaml
+#cloud-config
+users:
+  - name: alice
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    shell: /bin/bash
+    ssh_authorized_keys:
+      - ssh-ed25519 AAAA... alice@host
+```
+
+Launch the VM:
+
+```sh
+virt-install \
+  --name alice-vm \
+  --memory 32768 \
+  --vcpus 8 \
+  --disk alice-vm.qcow2 \
+  --import \
+  --os-variant ubuntu22.04 \
+  --cloud-init user-data=alice-cloud-init.yaml \
+  --network bridge=virbr0 \
+  --noautoconsole
+```
+
+The user can then SSH into their VM:
+
+```sh
+ssh alice@<vm-ip>
+```
+
+#### GPU passthrough
+
+To give a VM direct access to a GPU, the host must pass through the PCI device
+using VFIO.
+
+Enable IOMMU in the kernel boot parameters (`/etc/default/grub`):
+
+```
+GRUB_CMDLINE_LINUX_DEFAULT="intel_iommu=on iommu=pt"
+```
+
+For AMD hosts, use `amd_iommu=on` instead. Update GRUB and reboot:
+
+```sh
+sudo update-grub
+sudo reboot
+```
+
+Identify the GPU's PCI address:
+
+```sh
+lspci -nn | grep -i nvidia
+```
+
+Detach the GPU from the host driver and bind it to VFIO:
+
+```sh
+sudo virsh nodedev-detach pci_0000_01_00_0
+```
+
+Attach the GPU to a VM:
+
+```sh
+sudo virsh attach-device alice-vm --file gpu-device.xml --persistent
+```
+
+Where `gpu-device.xml` contains the PCI device definition:
+
+```xml
+<hostdev mode='subsystem' type='pci' managed='yes'>
+  <source>
+    <address domain='0x0000' bus='0x01' slot='0x00' function='0x0'/>
+  </source>
+</hostdev>
+```
+
+Inside the VM, install the NVIDIA driver as usual:
+
+```sh
+sudo apt install nvidia-driver-550
+nvidia-smi
+```
+
+#### Shared storage
+
+To share files between host and VM, use virtio-fs or a simple shared directory
+via 9p:
+
+```sh
+sudo virsh edit alice-vm
+```
+
+Add a filesystem entry:
+
+```xml
+<filesystem type='mount' accessmode='mapped'>
+  <source dir='/home/alice/shared'/>
+  <target dir='hostshare'/>
+</filesystem>
+```
+
+Inside the VM, mount the shared directory:
+
+```sh
+sudo mkdir /mnt/hostshare
+sudo mount -t 9p -o trans=virtio hostshare /mnt/hostshare
+```
+
+#### Limitations
+
+- VMs have higher overhead than containers, consuming more memory and CPU for
+  the hypervisor and guest kernel.
+- GPU passthrough dedicates the entire GPU to one VM. Unlike containers, VMs
+  cannot easily share a single GPU across users without SR-IOV support, which
+  not all GPUs offer.
+- A host sudoer can still inspect a VM's virtual disk image on the host
+  filesystem:
+
+  ```sh
+  sudo guestmount -a /path/to/alice-vm.qcow2 -i /mnt/alice-disk
+  ```
+
+  This can be mitigated by enabling full-disk encryption (LUKS) inside the VM,
+  so the disk image contents are encrypted at rest.
+- A host sudoer can snapshot, suspend, or destroy any user's VM.
+
 ## Docker
 
 Multiple users might each want to run docker.
