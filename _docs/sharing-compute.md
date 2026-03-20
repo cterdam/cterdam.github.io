@@ -18,6 +18,33 @@ it to be future-proof. All owners split the upfront cost evenly; maintenance
 costs such as electricity are settled monthly based on local LLM usage, tracked
 by LiteLLM API keys.
 
+For user isolation on a single DGX Spark, do not use per-user VMs. The GB10 has
+one GPU and no MIG support, so only one VM could use the GPU at a time. Instead,
+keep all users on the host with separate accounts (Approach 1), share the GPU
+through a serving layer like vLLM, and use rootless Docker or Podman for
+workload isolation.
+
+For a DGX Spark Bundle, the main decision is whether users need the GPU for
+their own workloads (training, fine-tuning, experiments) or only need LLM API
+access (coding assistants, agents, batch inference).
+
+- If users primarily need **LLM API access**: stack both units and run the
+  largest model that fits across 256 GB (e.g., Llama 3.1 405B via tensor
+  parallelism). Users SSH into either unit for lightweight CPU work (editing,
+  scripting, small jobs) and hit the LLM through vLLM's API. Neither user gets
+  direct GPU access, but both get access to a much more capable model. Note
+  that because the GB10 uses unified memory, the model weights sit in the same
+  128 GB pool as the OS and user processes on each unit. With
+  `--gpu-memory-utilization 0.85`, vLLM claims ~109 GB per unit for the model,
+  leaving only ~19 GB per unit for the kernel, system services, and user
+  work — enough for development tasks, but not for memory-hungry workloads
+  alongside the LLM.
+- If users need **their own GPU compute**: dedicate one unit to LLM hosting and
+  the other to user workloads. The LLM unit runs a model that fits in 128 GB
+  (e.g., Llama 3.3 70B quantized). The user unit provides a full 128 GB
+  unified memory pool and GPU for training, fine-tuning, or experiments. The
+  tradeoff is a smaller hosted model.
+
 ## Compute options
 
 | Spec | DGX Spark | DGX Spark Bundle | Mac Studio |
@@ -417,6 +444,282 @@ export DOCKER_HOST=unix://$XDG_RUNTIME_DIR/docker.sock
   ```sh
   sudo -u alice podman exec -it myworkspace bash
   ```
+
+### Approach 3 - Per-user virtual machines
+
+Each user runs their own virtual machine (VM) on the host, providing full
+kernel-level isolation. Each VM is an independent OS with its own root, its own
+packages, and its own filesystem. Users SSH into their VM rather than the host
+directly.
+
+#### Autonomy and privacy
+
+Each user is root inside their own VM. They can install packages, configure
+services, and manage files without affecting anyone else. No coordination with
+other users or the host admin is needed for day-to-day operations.
+
+Other users on the host cannot see inside a VM's filesystem in the normal
+course. A host sudoer, however, can still inspect a VM's virtual disk image:
+
+```sh
+sudo guestmount -a /path/to/alice-vm.qcow2 -i /mnt/alice-disk
+```
+
+This can be mitigated by enabling full-disk encryption (LUKS) inside the VM. If
+the VM's disk is LUKS-encrypted, the host sudoer sees only ciphertext on disk.
+The encryption key lives in the VM's memory at runtime, so the data is
+accessible only while the VM is booted and the user has unlocked it.
+
+A host sudoer can also snapshot, suspend, or destroy any user's VM via libvirt
+commands. This is analogous to a cloud provider having control over tenants'
+instances and is difficult to prevent while the host retains root.
+
+#### Resource impact
+
+VMs reserve host RAM and CPU at creation time. For example, a VM created with
+`--memory 32768 --vcpus 8` locks 32 GB of the host's RAM and claims 8 CPU
+threads, whether or not the guest is actively using them. On a machine with
+128 GB RAM, two such VMs would consume half the host memory before any workload
+runs. On a unified-memory system like the DGX Spark, this reservation also
+reduces memory available to the GPU, since both share the same pool.
+
+Each VM's virtual disk is a file on the host, typically in qcow2 format. A
+qcow2 disk starts small and grows as the guest writes data (thin provisioning),
+but the maximum size must be set upfront. Admin should plan disk quotas per
+user to avoid filling the host's storage:
+
+```sh
+# Create a 100G thin-provisioned disk (actual size on host starts near zero)
+qemu-img create -f qcow2 alice-vm.qcow2 100G
+```
+
+The hypervisor itself (QEMU process, virtio drivers, guest kernel) adds
+overhead. Expect roughly 500 MB–1 GB of extra RAM per VM for the guest kernel
+and system services, plus some CPU cost for virtualization traps.
+
+#### Daily workflow
+
+VMs are configured to start automatically when the host boots, so they are
+always running. When a user wants to work, they SSH directly from their local
+machine into their VM — not the host:
+
+```sh
+# From the user's laptop, SSH straight into the VM
+ssh alice@<vm-ip>
+```
+
+This requires the VM's network to be reachable. The simplest setup is a bridged
+network so each VM gets its own IP on the local network. Alternatively, the host
+can forward a specific port to each VM:
+
+```sh
+# Host forwards port 2201 → alice's VM port 22, 2202 → bob's VM port 22
+sudo iptables -t nat -A PREROUTING -p tcp --dport 2201 \
+  -j DNAT --to-destination <alice-vm-ip>:22
+sudo iptables -t nat -A PREROUTING -p tcp --dport 2202 \
+  -j DNAT --to-destination <bob-vm-ip>:22
+```
+
+Once inside, the user is in a full Linux environment. They can run tmux, start
+Docker containers, launch GPU workloads, etc. — exactly as if they had their own
+dedicated machine.
+
+To share files between host and VM (for example, to access a shared dataset),
+use a 9p mount. In the VM's libvirt XML:
+
+```xml
+<filesystem type='mount' accessmode='mapped'>
+  <source dir='/home/alice/shared'/>
+  <target dir='hostshare'/>
+</filesystem>
+```
+
+Inside the VM:
+
+```sh
+sudo mkdir -p /mnt/hostshare
+sudo mount -t 9p -o trans=virtio hostshare /mnt/hostshare
+```
+
+#### Setup
+
+Install QEMU/KVM and libvirt:
+
+```sh
+sudo apt install qemu-kvm libvirt-daemon-system virtinst virt-manager
+```
+
+Enable and start libvirt:
+
+```sh
+sudo systemctl enable --now libvirtd
+```
+
+Add each user to the `libvirt` group so they can manage their own VMs:
+
+```sh
+sudo usermod -aG libvirt alice
+sudo usermod -aG libvirt bob
+```
+
+#### Creating a VM
+
+Each user creates their own VM from a base image. For example, using an Ubuntu
+cloud image:
+
+```sh
+# Download a cloud image
+wget https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img
+
+# Create a user-specific disk by copying the base image
+cp jammy-server-cloudimg-amd64.img alice-vm.qcow2
+qemu-img resize alice-vm.qcow2 100G
+```
+
+Create a cloud-init config for the user at `alice-cloud-init.yaml`:
+
+```yaml
+#cloud-config
+users:
+  - name: alice
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    shell: /bin/bash
+    ssh_authorized_keys:
+      - ssh-ed25519 AAAA... alice@host
+```
+
+Launch the VM with autostart so it survives host reboots:
+
+```sh
+virt-install \
+  --name alice-vm \
+  --memory 32768 \
+  --vcpus 8 \
+  --disk alice-vm.qcow2 \
+  --import \
+  --os-variant ubuntu22.04 \
+  --cloud-init user-data=alice-cloud-init.yaml \
+  --network bridge=virbr0 \
+  --noautoconsole
+
+virsh autostart alice-vm
+```
+
+#### GPU passthrough
+
+To give a VM direct access to a GPU, the host must pass through the PCI device
+using VFIO.
+
+Enable IOMMU in the kernel boot parameters (`/etc/default/grub`):
+
+```
+GRUB_CMDLINE_LINUX_DEFAULT="intel_iommu=on iommu=pt"
+```
+
+For AMD hosts, use `amd_iommu=on` instead. Update GRUB and reboot:
+
+```sh
+sudo update-grub
+sudo reboot
+```
+
+Identify the GPU's PCI address:
+
+```sh
+lspci -nn | grep -i nvidia
+```
+
+Detach the GPU from the host driver and bind it to VFIO:
+
+```sh
+sudo virsh nodedev-detach pci_0000_01_00_0
+```
+
+Attach the GPU to a VM:
+
+```sh
+sudo virsh attach-device alice-vm --file gpu-device.xml --persistent
+```
+
+Where `gpu-device.xml` contains the PCI device definition:
+
+```xml
+<hostdev mode='subsystem' type='pci' managed='yes'>
+  <source>
+    <address domain='0x0000' bus='0x01' slot='0x00' function='0x0'/>
+  </source>
+</hostdev>
+```
+
+Inside the VM, install the NVIDIA driver as usual:
+
+```sh
+sudo apt install nvidia-driver-550
+nvidia-smi
+```
+
+Note that GPU passthrough dedicates the entire physical GPU to one VM. Unlike
+containers, VMs cannot easily share a single GPU across users without SR-IOV
+support, which not all GPUs offer.
+
+#### Limitations
+
+- High resource overhead. Each VM reserves a fixed chunk of host RAM and CPU,
+  and runs its own kernel and system services. On unified-memory systems like
+  the DGX Spark, VM memory reservations directly reduce GPU-available memory,
+  making large models harder to serve.
+- GPU passthrough is all-or-nothing per GPU. Users cannot share a single GPU
+  across VMs without hardware SR-IOV support.
+- A host sudoer can mount VM disk images (mitigated by LUKS encryption inside
+  the VM) and can snapshot, suspend, or destroy any VM.
+
+#### On DGX Spark
+
+The DGX Spark uses a GB10 Grace Blackwell Superchip with 128 GB unified
+LPDDR5x memory shared between a 20-core ARM CPU and a single Blackwell GPU.
+The unified memory architecture means the GPU does not have separate VRAM — CPU
+and GPU access the same physical memory pool. Any memory given to a VM is memory
+the GPU cannot use, and vice versa.
+
+This has important consequences for the VM approach:
+
+- **No MIG support.** The GB10 does not support NVIDIA Multi-Instance GPU
+  (MIG), which is the standard way to partition a GPU into isolated slices on
+  data-center GPUs like the A100 or H100. A user cannot get "half a GPU" inside
+  a VM. GPU passthrough gives one VM the entire GPU, leaving nothing for other
+  VMs.
+- **Unified memory complicates partitioning.** Since CPU and GPU share the same
+  128 GB, carving out memory for a VM (e.g., `--memory 64G`) also reduces what
+  is available to the GPU. There is no way to give a VM "64 GB of RAM plus
+  64 GB of GPU memory" — it is all one pool. A VM that reserves 64 GB leaves
+  at most 64 GB for the GPU, which is not enough for many large models.
+- **One GPU owner at a time.** With VMs on a single DGX Spark, only the VM that
+  receives GPU passthrough can run GPU workloads. Other VMs are CPU-only.
+
+For a DGX Spark Bundle (two DGX Sparks connected via a direct-attach cable),
+each unit has its own GB10 chip and 128 GB memory. The bundle can be used in two
+ways:
+
+- **Stacked for a large model.** Both units run a single LLM via tensor
+  parallelism (Ray + vLLM), pooling ~256 GB for models like Llama 3.1 405B.
+  Both GPUs are consumed by inference. Users SSH into either unit for
+  lightweight CPU work (editing, scripting, small jobs) and access the LLM
+  through the API. No user gets direct GPU access. Because memory is unified,
+  the model weights compete with user processes for the same 128 GB on each
+  unit. With `--gpu-memory-utilization 0.85`, vLLM claims ~109 GB per unit,
+  leaving ~19 GB per unit for the OS and user work. This is enough for
+  development tasks but not for memory-intensive workloads alongside the LLM.
+- **Split by role.** One unit is dedicated to LLM hosting (a model that fits in
+  128 GB, such as Llama 3.3 70B quantized). The other unit is the user
+  workstation with a full 128 GB unified memory pool and GPU for training,
+  fine-tuning, or experiments. The user unit has no memory contention with the
+  model since inference runs entirely on the other unit. The tradeoff is a
+  smaller hosted model.
+
+In either configuration, VMs add no value on DGX Spark. The GPU cannot be
+partitioned (no MIG), so a VM with GPU passthrough simply claims the whole chip.
+The better approach is to run directly on the host (Approach 1) and share the
+GPU at the application level via vLLM.
 
 ## Docker
 
