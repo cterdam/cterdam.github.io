@@ -18,6 +18,17 @@ it to be future-proof. All owners split the upfront cost evenly; maintenance
 costs such as electricity are settled monthly based on local LLM usage, tracked
 by LiteLLM API keys.
 
+For user isolation on a single DGX Spark, do not use per-user VMs. The GB10 has
+one GPU and no MIG support, so only one VM could use the GPU at a time. Instead,
+keep all users on the host with separate accounts (Approach 1), share the GPU
+through a serving layer like vLLM, and use rootless Docker or Podman for
+workload isolation.
+
+For a DGX Spark Bundle, consider assigning one unit per user. Each unit is a
+self-contained machine with its own GPU and 128 GB memory, so there is no need
+to share a GPU. When both units are needed together (e.g., to run a large model
+across both), use the standard stacked configuration and share access via vLLM.
+
 ## Compute options
 
 | Spec | DGX Spark | DGX Spark Bundle | Mac Studio |
@@ -643,9 +654,39 @@ support, which not all GPUs offer.
   across VMs without hardware SR-IOV support.
 - A host sudoer can mount VM disk images (mitigated by LUKS encryption inside
   the VM) and can snapshot, suspend, or destroy any VM.
-- More complex initial setup compared to containers or plain user accounts.
-  Each VM needs its own OS image, cloud-init config, network config, and GPU
-  passthrough config.
+
+#### On DGX Spark
+
+The DGX Spark uses a GB10 Grace Blackwell Superchip with 128 GB unified
+LPDDR5x memory shared between a 20-core ARM CPU and a single Blackwell GPU.
+The unified memory architecture means the GPU does not have separate VRAM — CPU
+and GPU access the same physical memory pool.
+
+This has important consequences for the VM approach:
+
+- **No MIG support.** The GB10 does not support NVIDIA Multi-Instance GPU
+  (MIG), which is the standard way to partition a GPU into isolated slices on
+  data-center GPUs like the A100 or H100. A user cannot get "half a GPU" inside
+  a VM. GPU passthrough gives one VM the entire GPU, leaving nothing for other
+  VMs.
+- **Unified memory complicates partitioning.** Since CPU and GPU share the same
+  128 GB, carving out memory for a VM (e.g., `--memory 64G`) also reduces what
+  is available to the GPU. There is no way to give a VM "64 GB of RAM plus
+  64 GB of GPU memory" — it is all one pool.
+- **One GPU owner at a time.** With VMs on a single DGX Spark, only the VM that
+  receives GPU passthrough can run GPU workloads. Other VMs are CPU-only.
+
+For a DGX Spark Bundle (two DGX Sparks connected via a direct-attach cable),
+each unit has its own GB10 chip and 128 GB memory. This means each user can own
+one entire DGX Spark as their VM host, sidestepping the GPU-sharing problem
+entirely. The bundle's primary purpose is to run models that exceed a single
+unit's memory (e.g., Llama 3.1 405B across both units).
+
+Given these constraints, VMs are a poor fit for sharing a single DGX Spark among
+multiple GPU users. The better approach on DGX Spark is to run workloads
+directly on the host (Approach 1) and share the GPU at the application level via
+a serving framework like vLLM, which can multiplex inference requests from
+multiple users onto the single GPU.
 
 ## Docker
 
