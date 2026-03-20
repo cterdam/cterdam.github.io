@@ -24,10 +24,19 @@ keep all users on the host with separate accounts (Approach 1), share the GPU
 through a serving layer like vLLM, and use rootless Docker or Podman for
 workload isolation.
 
-For a DGX Spark Bundle, consider assigning one unit per user. Each unit is a
-self-contained machine with its own GPU and 128 GB memory, so there is no need
-to share a GPU. When both units are needed together (e.g., to run a large model
-across both), use the standard stacked configuration and share access via vLLM.
+For a DGX Spark Bundle, the main decision is whether users need the GPU for
+their own workloads (training, fine-tuning, experiments) or only need LLM API
+access (coding assistants, agents, batch inference).
+
+- If users primarily need **LLM API access**: stack both units and run the
+  largest model that fits across 256 GB (e.g., Llama 3.1 405B via tensor
+  parallelism). Users SSH into either unit for CPU work and hit the LLM through
+  vLLM's API. Neither user gets direct GPU access, but both get access to a
+  much more capable model.
+- If users need **their own GPU compute**: dedicate one unit to LLM hosting and
+  the other to user workloads. The LLM unit runs a model that fits in 128 GB
+  (e.g., Llama 3.3 70B quantized). The user unit provides a full GPU for
+  experiments. The tradeoff is a smaller hosted model.
 
 ## Compute options
 
@@ -677,16 +686,22 @@ This has important consequences for the VM approach:
   receives GPU passthrough can run GPU workloads. Other VMs are CPU-only.
 
 For a DGX Spark Bundle (two DGX Sparks connected via a direct-attach cable),
-each unit has its own GB10 chip and 128 GB memory. This means each user can own
-one entire DGX Spark as their VM host, sidestepping the GPU-sharing problem
-entirely. The bundle's primary purpose is to run models that exceed a single
-unit's memory (e.g., Llama 3.1 405B across both units).
+each unit has its own GB10 chip and 128 GB memory. The bundle can be used in two
+ways:
 
-Given these constraints, VMs are a poor fit for sharing a single DGX Spark among
-multiple GPU users. The better approach on DGX Spark is to run workloads
-directly on the host (Approach 1) and share the GPU at the application level via
-a serving framework like vLLM, which can multiplex inference requests from
-multiple users onto the single GPU.
+- **Stacked for a large model.** Both units run a single LLM via tensor
+  parallelism (Ray + vLLM), pooling ~256 GB for models like Llama 3.1 405B.
+  Both GPUs are consumed by inference. Users SSH into either unit for CPU work
+  and access the LLM through the API. No user gets direct GPU access.
+- **Split by role.** One unit is dedicated to LLM hosting (a model that fits in
+  128 GB, such as Llama 3.3 70B quantized). The other unit is the user
+  workstation with full GPU access for training or experiments. This gives users
+  a GPU but limits the hosted model to what fits on a single unit.
+
+In either configuration, VMs add no value on DGX Spark. The GPU cannot be
+partitioned (no MIG), so a VM with GPU passthrough simply claims the whole chip.
+The better approach is to run directly on the host (Approach 1) and share the
+GPU at the application level via vLLM.
 
 ## Docker
 
