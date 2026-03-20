@@ -18,6 +18,10 @@ it to be future-proof. All owners split the upfront cost evenly; maintenance
 costs such as electricity are settled monthly based on local LLM usage, tracked
 by LiteLLM API keys.
 
+For user privacy, adopt Approach 3 and set up a separate VM per user. Host the
+LLM workflow on the host machine, which the user VMs can access via API. User
+VMs will not have access to GPU.
+
 ## Compute options
 
 | Spec | DGX Spark | DGX Spark Bundle | Mac Studio |
@@ -39,12 +43,6 @@ by LiteLLM API keys.
 
 Sudo privilege will presumably be shared by all trusted owners, but no user
 should have general access to another user's files in `$HOME`.
-
-### Recommendation
-
-Adopt Approach 3 and set up a VM per user. Host the LLM workflow on the host
-machine, which the user VMs can access via API. User VMs will not have access to
-GPU.
 
 ### Approach 1 - Sudo command logging
 
