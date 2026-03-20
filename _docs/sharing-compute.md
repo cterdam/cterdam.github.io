@@ -30,13 +30,20 @@ access (coding assistants, agents, batch inference).
 
 - If users primarily need **LLM API access**: stack both units and run the
   largest model that fits across 256 GB (e.g., Llama 3.1 405B via tensor
-  parallelism). Users SSH into either unit for CPU work and hit the LLM through
-  vLLM's API. Neither user gets direct GPU access, but both get access to a
-  much more capable model.
+  parallelism). Users SSH into either unit for lightweight CPU work (editing,
+  scripting, small jobs) and hit the LLM through vLLM's API. Neither user gets
+  direct GPU access, but both get access to a much more capable model. Note
+  that because the GB10 uses unified memory, the model weights sit in the same
+  128 GB pool as the OS and user processes on each unit. With
+  `--gpu-memory-utilization 0.85`, vLLM claims ~109 GB per unit for the model,
+  leaving only ~19 GB per unit for the kernel, system services, and user
+  work — enough for development tasks, but not for memory-hungry workloads
+  alongside the LLM.
 - If users need **their own GPU compute**: dedicate one unit to LLM hosting and
   the other to user workloads. The LLM unit runs a model that fits in 128 GB
-  (e.g., Llama 3.3 70B quantized). The user unit provides a full GPU for
-  experiments. The tradeoff is a smaller hosted model.
+  (e.g., Llama 3.3 70B quantized). The user unit provides a full 128 GB
+  unified memory pool and GPU for training, fine-tuning, or experiments. The
+  tradeoff is a smaller hosted model.
 
 ## Compute options
 
@@ -473,7 +480,8 @@ VMs reserve host RAM and CPU at creation time. For example, a VM created with
 `--memory 32768 --vcpus 8` locks 32 GB of the host's RAM and claims 8 CPU
 threads, whether or not the guest is actively using them. On a machine with
 128 GB RAM, two such VMs would consume half the host memory before any workload
-runs.
+runs. On a unified-memory system like the DGX Spark, this reservation also
+reduces memory available to the GPU, since both share the same pool.
 
 Each VM's virtual disk is a file on the host, typically in qcow2 format. A
 qcow2 disk starts small and grows as the guest writes data (thin provisioning),
@@ -657,8 +665,9 @@ support, which not all GPUs offer.
 #### Limitations
 
 - High resource overhead. Each VM reserves a fixed chunk of host RAM and CPU,
-  and runs its own kernel and system services. On a machine with limited memory,
-  this significantly reduces what's available for actual workloads.
+  and runs its own kernel and system services. On unified-memory systems like
+  the DGX Spark, VM memory reservations directly reduce GPU-available memory,
+  making large models harder to serve.
 - GPU passthrough is all-or-nothing per GPU. Users cannot share a single GPU
   across VMs without hardware SR-IOV support.
 - A host sudoer can mount VM disk images (mitigated by LUKS encryption inside
@@ -669,7 +678,8 @@ support, which not all GPUs offer.
 The DGX Spark uses a GB10 Grace Blackwell Superchip with 128 GB unified
 LPDDR5x memory shared between a 20-core ARM CPU and a single Blackwell GPU.
 The unified memory architecture means the GPU does not have separate VRAM — CPU
-and GPU access the same physical memory pool.
+and GPU access the same physical memory pool. Any memory given to a VM is memory
+the GPU cannot use, and vice versa.
 
 This has important consequences for the VM approach:
 
@@ -681,7 +691,8 @@ This has important consequences for the VM approach:
 - **Unified memory complicates partitioning.** Since CPU and GPU share the same
   128 GB, carving out memory for a VM (e.g., `--memory 64G`) also reduces what
   is available to the GPU. There is no way to give a VM "64 GB of RAM plus
-  64 GB of GPU memory" — it is all one pool.
+  64 GB of GPU memory" — it is all one pool. A VM that reserves 64 GB leaves
+  at most 64 GB for the GPU, which is not enough for many large models.
 - **One GPU owner at a time.** With VMs on a single DGX Spark, only the VM that
   receives GPU passthrough can run GPU workloads. Other VMs are CPU-only.
 
@@ -691,12 +702,19 @@ ways:
 
 - **Stacked for a large model.** Both units run a single LLM via tensor
   parallelism (Ray + vLLM), pooling ~256 GB for models like Llama 3.1 405B.
-  Both GPUs are consumed by inference. Users SSH into either unit for CPU work
-  and access the LLM through the API. No user gets direct GPU access.
+  Both GPUs are consumed by inference. Users SSH into either unit for
+  lightweight CPU work (editing, scripting, small jobs) and access the LLM
+  through the API. No user gets direct GPU access. Because memory is unified,
+  the model weights compete with user processes for the same 128 GB on each
+  unit. With `--gpu-memory-utilization 0.85`, vLLM claims ~109 GB per unit,
+  leaving ~19 GB per unit for the OS and user work. This is enough for
+  development tasks but not for memory-intensive workloads alongside the LLM.
 - **Split by role.** One unit is dedicated to LLM hosting (a model that fits in
   128 GB, such as Llama 3.3 70B quantized). The other unit is the user
-  workstation with full GPU access for training or experiments. This gives users
-  a GPU but limits the hosted model to what fits on a single unit.
+  workstation with a full 128 GB unified memory pool and GPU for training,
+  fine-tuning, or experiments. The user unit has no memory contention with the
+  model since inference runs entirely on the other unit. The tradeoff is a
+  smaller hosted model.
 
 In either configuration, VMs add no value on DGX Spark. The GPU cannot be
 partitioned (no MIG), so a VM with GPU passthrough simply claims the whole chip.
