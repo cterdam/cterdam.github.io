@@ -420,9 +420,98 @@ export DOCKER_HOST=unix://$XDG_RUNTIME_DIR/docker.sock
 
 ### Approach 3 - Per-user virtual machines
 
-Each user runs their own virtual machine (VM) on the host, providing full OS
-isolation. Unlike containers, VMs run a separate kernel, so a host sudoer cannot
-simply inspect another user's filesystem without extra steps.
+Each user runs their own virtual machine (VM) on the host, providing full
+kernel-level isolation. Each VM is an independent OS with its own root, its own
+packages, and its own filesystem. Users SSH into their VM rather than the host
+directly.
+
+#### Autonomy and privacy
+
+Each user is root inside their own VM. They can install packages, configure
+services, and manage files without affecting anyone else. No coordination with
+other users or the host admin is needed for day-to-day operations.
+
+Other users on the host cannot see inside a VM's filesystem in the normal
+course. A host sudoer, however, can still inspect a VM's virtual disk image:
+
+```sh
+sudo guestmount -a /path/to/alice-vm.qcow2 -i /mnt/alice-disk
+```
+
+This can be mitigated by enabling full-disk encryption (LUKS) inside the VM. If
+the VM's disk is LUKS-encrypted, the host sudoer sees only ciphertext on disk.
+The encryption key lives in the VM's memory at runtime, so the data is
+accessible only while the VM is booted and the user has unlocked it.
+
+A host sudoer can also snapshot, suspend, or destroy any user's VM via libvirt
+commands. This is analogous to a cloud provider having control over tenants'
+instances and is difficult to prevent while the host retains root.
+
+#### Resource impact
+
+VMs reserve host RAM and CPU at creation time. For example, a VM created with
+`--memory 32768 --vcpus 8` locks 32 GB of the host's RAM and claims 8 CPU
+threads, whether or not the guest is actively using them. On a machine with
+128 GB RAM, two such VMs would consume half the host memory before any workload
+runs.
+
+Each VM's virtual disk is a file on the host, typically in qcow2 format. A
+qcow2 disk starts small and grows as the guest writes data (thin provisioning),
+but the maximum size must be set upfront. Admin should plan disk quotas per
+user to avoid filling the host's storage:
+
+```sh
+# Create a 100G thin-provisioned disk (actual size on host starts near zero)
+qemu-img create -f qcow2 alice-vm.qcow2 100G
+```
+
+The hypervisor itself (QEMU process, virtio drivers, guest kernel) adds
+overhead. Expect roughly 500 MB–1 GB of extra RAM per VM for the guest kernel
+and system services, plus some CPU cost for virtualization traps.
+
+#### Daily workflow
+
+VMs are configured to start automatically when the host boots, so they are
+always running. When a user wants to work, they SSH directly from their local
+machine into their VM — not the host:
+
+```sh
+# From the user's laptop, SSH straight into the VM
+ssh alice@<vm-ip>
+```
+
+This requires the VM's network to be reachable. The simplest setup is a bridged
+network so each VM gets its own IP on the local network. Alternatively, the host
+can forward a specific port to each VM:
+
+```sh
+# Host forwards port 2201 → alice's VM port 22, 2202 → bob's VM port 22
+sudo iptables -t nat -A PREROUTING -p tcp --dport 2201 \
+  -j DNAT --to-destination <alice-vm-ip>:22
+sudo iptables -t nat -A PREROUTING -p tcp --dport 2202 \
+  -j DNAT --to-destination <bob-vm-ip>:22
+```
+
+Once inside, the user is in a full Linux environment. They can run tmux, start
+Docker containers, launch GPU workloads, etc. — exactly as if they had their own
+dedicated machine.
+
+To share files between host and VM (for example, to access a shared dataset),
+use a 9p mount. In the VM's libvirt XML:
+
+```xml
+<filesystem type='mount' accessmode='mapped'>
+  <source dir='/home/alice/shared'/>
+  <target dir='hostshare'/>
+</filesystem>
+```
+
+Inside the VM:
+
+```sh
+sudo mkdir -p /mnt/hostshare
+sudo mount -t 9p -o trans=virtio hostshare /mnt/hostshare
+```
 
 #### Setup
 
@@ -438,8 +527,7 @@ Enable and start libvirt:
 sudo systemctl enable --now libvirtd
 ```
 
-Add each user to the `libvirt` group so they can manage their own VMs without
-sudo:
+Add each user to the `libvirt` group so they can manage their own VMs:
 
 ```sh
 sudo usermod -aG libvirt alice
@@ -472,7 +560,7 @@ users:
       - ssh-ed25519 AAAA... alice@host
 ```
 
-Launch the VM:
+Launch the VM with autostart so it survives host reboots:
 
 ```sh
 virt-install \
@@ -485,12 +573,8 @@ virt-install \
   --cloud-init user-data=alice-cloud-init.yaml \
   --network bridge=virbr0 \
   --noautoconsole
-```
 
-The user can then SSH into their VM:
-
-```sh
-ssh alice@<vm-ip>
+virsh autostart alice-vm
 ```
 
 #### GPU passthrough
@@ -546,48 +630,22 @@ sudo apt install nvidia-driver-550
 nvidia-smi
 ```
 
-#### Shared storage
-
-To share files between host and VM, use virtio-fs or a simple shared directory
-via 9p:
-
-```sh
-sudo virsh edit alice-vm
-```
-
-Add a filesystem entry:
-
-```xml
-<filesystem type='mount' accessmode='mapped'>
-  <source dir='/home/alice/shared'/>
-  <target dir='hostshare'/>
-</filesystem>
-```
-
-Inside the VM, mount the shared directory:
-
-```sh
-sudo mkdir /mnt/hostshare
-sudo mount -t 9p -o trans=virtio hostshare /mnt/hostshare
-```
+Note that GPU passthrough dedicates the entire physical GPU to one VM. Unlike
+containers, VMs cannot easily share a single GPU across users without SR-IOV
+support, which not all GPUs offer.
 
 #### Limitations
 
-- VMs have higher overhead than containers, consuming more memory and CPU for
-  the hypervisor and guest kernel.
-- GPU passthrough dedicates the entire GPU to one VM. Unlike containers, VMs
-  cannot easily share a single GPU across users without SR-IOV support, which
-  not all GPUs offer.
-- A host sudoer can still inspect a VM's virtual disk image on the host
-  filesystem:
-
-  ```sh
-  sudo guestmount -a /path/to/alice-vm.qcow2 -i /mnt/alice-disk
-  ```
-
-  This can be mitigated by enabling full-disk encryption (LUKS) inside the VM,
-  so the disk image contents are encrypted at rest.
-- A host sudoer can snapshot, suspend, or destroy any user's VM.
+- High resource overhead. Each VM reserves a fixed chunk of host RAM and CPU,
+  and runs its own kernel and system services. On a machine with limited memory,
+  this significantly reduces what's available for actual workloads.
+- GPU passthrough is all-or-nothing per GPU. Users cannot share a single GPU
+  across VMs without hardware SR-IOV support.
+- A host sudoer can mount VM disk images (mitigated by LUKS encryption inside
+  the VM) and can snapshot, suspend, or destroy any VM.
+- More complex initial setup compared to containers or plain user accounts.
+  Each VM needs its own OS image, cloud-init config, network config, and GPU
+  passthrough config.
 
 ## Docker
 
