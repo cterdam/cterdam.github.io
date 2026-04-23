@@ -26,7 +26,7 @@ sometimes one ends up with more names than one person really needs. For example,
 you might see me associated with any of the following:
 
 - **李良澤**
-  - The name in Chinese which I was given shortly after birth.
+  - The name in Chinese given to me shortly after birth.
 - **Liangze Li**
   - The official Latin transliteration of my Chinese name using Pinyin.
 - **Josh Lee**
@@ -43,30 +43,25 @@ you might see me associated with any of the following:
 - **Джош Лии**
   - Cyrillic transliteration of "Josh Lee".
 
-### Can you advise our startup?
-
-I'd love to touch base and hear more about your startup.
-
-Alphabet's Conflict of Interest review process is rather strict on formal
-advisorships, so I usually cannot promise any long-term outcome until we find
-out.
-
 ### Can you collaborate with us on a research project?
 
-I am open to hearing about your project and exploring opportunities for
-collaboration.
+Get in touch.
+
+### Can you advise our startup?
+
+Get in touch. Meanwhile: Alphabet's Conflict of Interest review process is
+rather strict on formal advisorships, so I cannot promise any long-term outcome.
 
 ### Can you refer me for a role?
 
-I can refer you if I have a reason to believe you are suitable for the role.
-Please confirm with me and use this [form](https://forms.gle/31WYqGZdKrigTmtt9)
-to share details.
+I can if I have a reason to believe you are suitable for the role. Confirm with
+me and use this [form](https://forms.gle/31WYqGZdKrigTmtt9) to share details.
 
 ### Can we schedule a meeting?
 
-Please confirm with me before booking office hours
-[here](https://calendar.app.google/6hmxxL3hVZ4gi7eJ7). Meetings can be either in
-person or online.
+Confirm with me before booking office hours
+[here](https://calendar.app.google/6hmxxL3hVZ4gi7eJ7). If you are around the Bay
+Area, we could meet in person.
 
 ## Contact
 
